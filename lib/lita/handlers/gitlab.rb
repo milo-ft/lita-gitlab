@@ -9,17 +9,14 @@ module Lita
       http.post '/lita/gitlab', :receive
 
       def receive(request, response)
-        json_data = parse_json(request.params['payload']) or return
+        request.body.rewind
+        json_data = JSON.parse(request.body.read) or return
         data = symbolize(json_data)
         message = format_message(data)
+        targets = request.params['targets'] || Lita.config.handlers.gitlab.default_room || '#general'
         rooms = []
-        if params['targets']
-          params['targets'].each do |param_target|
-            rooms << param_target
-          end
-        else
-          rooms = '#general'
-          #Lita.config.handlers.gitlab.default_room
+        targets.split(',').each do |param_target|
+          rooms << param_target
         end
         rooms.each do |room|
           target = Source.new(room: room)
@@ -56,13 +53,6 @@ module Lita
       end
 
       # General methods
-      def parse_json(payload)
-        MultiJson.load(payload)
-      rescue MultiJson::LoadError => e
-        Lita.logger.error("Could not parse JSON payload from Gitlab: #{e.message}")
-        return
-      end
-
       def symbolize(obj)
         return obj.inject({}){|memo,(k,v)| memo[k.to_sym] =  symbolize(v); memo} if obj.is_a? Hash
         return obj.inject([]){|memo,v    | memo           << symbolize(v); memo} if obj.is_a? Array
