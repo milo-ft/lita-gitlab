@@ -2,3 +2,22 @@ en:
   lita:
     handlers:
       gitlab:
+        system:
+          user_add_to_team: "%{user_name} has joined the %{project_name} project"
+          project_create: "%{user_name} has created the %{name} project!"
+          project_destroy: "%{user_name} has destroyed the %{name} project!"
+          user_remove_from_team: "%{user_name} has left the %{project_name} project"
+          user_create: "%{name} has joined the team, welcome %{name}!"
+          user_destroy: "%{name} is dead for us."
+        web:
+          issue:
+            opened: "New issue >> %{title}: %{description}"
+            reopened: "The issue '%{title}' has been reopened."
+            closed: "The issue '%{title}' is now closed"
+          merge_request:
+            opened: "New merge-request: %{title} to branch %{branch}"
+            reopened: "The merge-request '%{title}' has been reopened."
+            closed: "The merge-request '%{title}' is now closed."
+          push:
+            new_branch: "New branch"
+            add_to_branch: "Added branch"

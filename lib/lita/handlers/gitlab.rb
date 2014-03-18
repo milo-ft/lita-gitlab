@@ -6,71 +6,68 @@ module Lita
         config.repos = {}
       end
 
-      http.post '/gitlab/system', :receive_system
-      http.post '/gitlab/web', :receive_web
+      http.post '/lita/gitlab', :receive
 
-      def receive_system(request, response)
-
-
-        event_type = request.env['HTTP_X_GITHUB_EVENT'] || 'unknown'
-        if event_type == "push"
-          payload = parse_payload(request.params['payload']) or return
-          repo = get_repo(payload)
-          notify_rooms(repo, payload)
-        elsif event_type == "ping"
-          response.status = 200
-          response.write "Working!"
+      def receive(request, response)
+        json_data = parse_json(request.params['payload']) or return
+        data = symbolize(json_data)
+        message = format_message(data)
+        rooms = []
+        if params['targets']
+          params['targets'].each do |param_target|
+            rooms << param_target
+          end
         else
-          response.status = 404
+          rooms = '#general'
+          #Lita.config.handlers.gitlab.default_room
         end
-      end
-
-      private
-
-      def parse_payload(payload)
-        MultiJson.load(payload)
-      rescue MultiJson::LoadError => e
-        Lita.logger.error('Could not parse JSON payload from Gitlab: #{e.message}')
-        return
-      end
-
-      def notify_rooms(repo, payload)
-        rooms = rooms_for_repo(repo) or return
-        message = format_message(payload)
-
         rooms.each do |room|
           target = Source.new(room: room)
           robot.send_message(target, message)
         end
       end
 
-      def format_message(payload)
-        if payload['commits'].size > 0
-          "[GitHub] Got #{payload['commits'].size} new commits from #{payload['commits'].first['author']['name']} on #{payload['repository']['owner']['name']}/#{payload['repository']['name']}"
-        elsif payload['created']
-          "[GitHub] #{payload['pusher']['name']} created: #{payload['ref']}: #{payload['base_ref']}"
-        elsif payload['deleted']
-          "[GitHub] #{payload['pusher']['name']} deleted: #{payload['ref']}"
+      private
+
+      def format_message(data)
+        (data.key? :event_name) ? system_message(data) : web_message(data)
+      end
+
+      def system_message(data)
+        t("system.#{data[:event_name]}") % data
+      rescue
+        Lita.logger.warn "Error formatting message: #{data.inspect}"
+      end
+
+      def web_message(data)
+        if data.key? :object_kind
+            t("web.#{data[:object_kind]}.#{data[:object_attributes][:state]}") % data[:object_attributes]
+        else
+          # Push has no object kind
+          branch = data[:ref].split('/').drop(2).join('/')
+          if data[:before] =~ /^0+$/
+            t('web.push.new_branch') % data
+          else
+            t('web.push.add_to_branch') % data
+          end
         end
       rescue
-        Lita.logger.warn "Error formatting message for #{repo} repo. Payload: #{payload}"
+        Lita.logger.warn "Error formatting message: #{data.inspect}"
+      end
+
+      # General methods
+      def parse_json(payload)
+        MultiJson.load(payload)
+      rescue MultiJson::LoadError => e
+        Lita.logger.error("Could not parse JSON payload from Gitlab: #{e.message}")
         return
       end
 
-      def rooms_for_repo(repo)
-        rooms = Lita.config.handlers.github_commits.repos[repo]
-        if rooms
-          Array(rooms)
-        else
-          Lita.logger.warn "Notification from Gitlab for unconfigured project: #{repo}"
-          return
-        end
+      def symbolize(obj)
+        return obj.inject({}){|memo,(k,v)| memo[k.to_sym] =  symbolize(v); memo} if obj.is_a? Hash
+        return obj.inject([]){|memo,v    | memo           << symbolize(v); memo} if obj.is_a? Array
+        return obj
       end
-
-
-      #def get_repo(payload)
-      #  "#{payload['repository']['owner']['name']}/#{payload['repository']['name']}"
-      #end
 
     end
 
