@@ -18,24 +18,21 @@ gem "lita-gitlab"
 
 ### Required attributes
 
-* `repos` (Hash) - A map of repositories to allow notifications for and the chat rooms to post them in.
-The keys should be strings in the format "gitlab_username/repository_name" and the values should be either a string room name or an array of string room names.
-Default: `{}`.
+* `default_room` (String) - A channel idenitifier.
+ie: `#general`.
 
 ### Example
 
 ``` ruby
 Lita.configure do |config|
-  config.handlers.gitlab.repos = {
-    "username/repo1" => "#someroom",
-    "username/repo2" => ["#someroom", "#someotherroom"]
-  }
+  config.handlers.gitlab.default_room = '#general'
 end
 ```
 
 ## Usage
 
-You will need to add a GitLab Webhook url that points to: `http://address.of.lita/gitlab`
+* `targets` Channel(s) separated by commas.
+You will need to add a GitLab Webhook url that points to: `http://address.of./lita/gitlab?targets=<targets>`
 
 ## License
 
