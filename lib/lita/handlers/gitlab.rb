@@ -9,8 +9,8 @@ module Lita
       http.post '/lita/gitlab', :receive
 
       def receive(request, response)
-        json_data = parse_payload(request.params['payload'])
-        data = symbolize(json_data)
+        json_body = request.params['payload'] || extract_json_from_request(request)
+        data = symbolize parse_payload(json_body)
         message = format_message(data)
         targets = request.params['targets'] || '#general'
         rooms = []
@@ -24,6 +24,11 @@ module Lita
       end
 
       private
+
+      def extract_json_from_request(request)
+        request.body.rewind
+        request.body.read
+      end
 
       def format_message(data)
         data.key?(:event_name) ? system_message(data) : web_message(data)
