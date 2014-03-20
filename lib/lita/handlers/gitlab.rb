@@ -4,6 +4,8 @@ module Lita
 
       def self.default_config(config)
         config.default_room = '#general'
+        config.url = 'http://example.gitlab/'
+        config.group = 'group_name'
       end
 
       http.post '/lita/gitlab', :receive
@@ -11,15 +13,18 @@ module Lita
       def receive(request, response)
         json_body = request.params['payload'] || extract_json_from_request(request)
         data = symbolize parse_payload(json_body)
+        data[:project] = request.params['project']
         message = format_message(data)
-        targets = request.params['targets'] || '#general'
-        rooms = []
-        targets.split(',').each do |param_target|
-          rooms << param_target
-        end
-        rooms.each do |room|
-          target = Source.new(room: room)
-          robot.send_message(target, message)
+        if message
+          targets = request.params['targets'] || self.config.default_room
+          rooms = []
+          targets.split(',').each do |param_target|
+            rooms << param_target
+          end
+          rooms.each do |room|
+            target = Source.new(room: room)
+            robot.send_message(target, message)
+          end
         end
       end
 
@@ -44,7 +49,9 @@ module Lita
         if data.key? :object_kind
           if data[:object_attributes].key? :target_branch
             # Merge request
-            data[:object_attributes][:link] = "#{data[:object_attributes][:target_branch]}/#{data[:object_attributes][:iid]}"
+            url = "#{self.config.url}"
+            url += data[:project] ? "#{self.config.group}/#{data[:project]}/merge_requests/#{data[:object_attributes][:iid]}" : "groups/#{self.config.group}"
+            data[:object_attributes][:link] =  "<#{url}|#{data[:title]}>"
             build_message "web.#{data[:object_kind]}.#{data[:object_attributes][:state]}", data[:object_attributes]
           else
             # Issue
@@ -53,7 +60,7 @@ module Lita
         else
           # Push has no object kind
           branch = data[:ref].split('/').drop(2).join('/')
-          data[:link] = data[:repository][:name]
+          data[:link] = "<#{data[:repository][:homepage]}|#{data[:repository][:name]}>"
           if data[:before] =~ /^0+$/
             build_message 'web.push.new_branch', data
           else

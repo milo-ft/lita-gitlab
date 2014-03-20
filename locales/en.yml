@@ -15,9 +15,11 @@ en:
             reopened: "The issue '%{title}' has been reopened."
             closed: "The issue '%{title}' is now closed"
           merge_request:
-            opened: "New merge-request: %{title} to %{link}"
-            reopened: "The merge-request '%{title}' has been reopened."
+            opened: "New merge-request: %{link}"
+            reopened: "The merge-request '%{link}' has been reopened."
             closed: "The merge-request '%{title}' is now closed."
+            locked: ""
+            merged: "Yay! The merge-request '%{link}' is has been merged."
           push:
             new_branch: "%{user_name} created the new branch '%{link}'"
             add_to_branch: "%{user_name} added %{total_commits_count} commits to branch '%{link}'"

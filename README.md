@@ -21,11 +21,19 @@ gem "lita-gitlab"
 * `default_room` (String) - A channel idenitifier.
 ie: `#general`.
 
+* `url` (String) - The Gitlab repository location.
+ie: `http://gitlab.mycompany.com/`.
+
+* `group_name` (String) - Your group identifier.
+ie: `my_team`.
+
 ### Example
 
 ``` ruby
 Lita.configure do |config|
   config.handlers.gitlab.default_room = '#general'
+  config.url = 'http://example.gitlab/'
+  config.group = 'group_name'
 end
 ```
 

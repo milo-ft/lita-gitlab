@@ -20,6 +20,7 @@ describe Lita::Handlers::Gitlab, lita_handler: true do
   let(:response) { Rack::Response.new }
   let(:params) { {} }
   let(:targets) { '#baz' }
+  let(:project) { 'test_project' }
   let(:matchers) {
     {
       new_team_member: 'join',
@@ -31,6 +32,7 @@ describe Lita::Handlers::Gitlab, lita_handler: true do
   describe '#receive' do
     before :each do
       allow(params).to receive(:[]).with('targets').and_return(targets)
+      allow(params).to receive(:[]).with('project').and_return(project)
     end
 
     context 'with system hook' do
