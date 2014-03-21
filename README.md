@@ -32,15 +32,17 @@ ie: `my_team`.
 ``` ruby
 Lita.configure do |config|
   config.handlers.gitlab.default_room = '#general'
-  config.url = 'http://example.gitlab/'
-  config.group = 'group_name'
+  config.handlers.gitlab.url = 'http://example.gitlab/'
+  config.handlers.gitlab.group = 'group_name'
 end
 ```
 
 ## Usage
 
 * `targets` Channel(s) separated by commas.
-You will need to add a GitLab Webhook url that points to: `http://address.of./lita/gitlab?targets=<targets>`
+* `project` The name of the specific project (only needed for webhooks).
+
+You will need to add a GitLab Webhook url that points to: `http://address.of./lita/gitlab?targets=<targets>&project=<project>`
 
 ## License
 

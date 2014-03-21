@@ -16,7 +16,7 @@ module Lita
         data[:project] = request.params['project']
         message = format_message(data)
         if message
-          targets = request.params['targets'] || self.config.default_room
+          targets = request.params['targets'] || Lita.config.handlers.gitlab.default_room
           rooms = []
           targets.split(',').each do |param_target|
             rooms << param_target
@@ -49,9 +49,9 @@ module Lita
         if data.key? :object_kind
           if data[:object_attributes].key? :target_branch
             # Merge request
-            url = "#{self.config.url}"
-            url += data[:project] ? "#{self.config.group}/#{data[:project]}/merge_requests/#{data[:object_attributes][:iid]}" : "groups/#{self.config.group}"
-            data[:object_attributes][:link] =  "<#{url}|#{data[:title]}>"
+            url = "#{Lita.config.handlers.gitlab.url}"
+            url += data[:project] ? "#{Lita.config.handlers.gitlab.group}/#{data[:project]}/merge_requests/#{data[:object_attributes][:iid]}" : "groups/#{Lita.config.handlers.gitlab.group}"
+            data[:object_attributes][:link] =  "<#{url}|#{data[:object_attributes][:title]}>"
             build_message "web.#{data[:object_kind]}.#{data[:object_attributes][:state]}", data[:object_attributes]
           else
             # Issue
