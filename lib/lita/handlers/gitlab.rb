@@ -40,40 +40,52 @@ module Lita
       end
 
       def system_message(data)
-        build_message "system.#{data[:event_name]}", data
+        interpolate_message "system.#{data[:event_name]}", data
       rescue
         Lita.logger.warn "Error formatting message: #{data.inspect}"
       end
 
       def web_message(data)
         if data.key? :object_kind
-          if data[:object_attributes].key? :target_branch
-            # Merge request
-            url = "#{Lita.config.handlers.gitlab.url}"
-            url += data[:project] ? "#{Lita.config.handlers.gitlab.group}/#{data[:project]}/merge_requests/#{data[:object_attributes][:iid]}" : "groups/#{Lita.config.handlers.gitlab.group}"
-            data[:object_attributes][:link] =  "<#{url}|#{data[:object_attributes][:title]}>"
-            build_message "web.#{data[:object_kind]}.#{data[:object_attributes][:state]}", data[:object_attributes]
-          else
-            # Issue
-            build_message "web.#{data[:object_kind]}.#{data[:object_attributes][:state]}", data[:object_attributes]
-          end
+          # Merge has target branch
+          (data[:object_attributes].key? :target_branch) ? build_merge_message(data) : build_issue_message(data)
         else
           # Push has no object kind
-          branch = data[:ref].split('/').drop(2).join('/')
-          data[:link] = "<#{data[:repository][:homepage]}|#{data[:repository][:name]}>"
-          if data[:before] =~ /^0+$/
-            build_message 'web.push.new_branch', data
-          else
-            build_message 'web.push.add_to_branch', data
-          end
+          build_branch_message(data)
         end
       rescue
         Lita.logger.warn "Error formatting message: #{data.inspect}"
       end
 
+      def build_issue_message(data)
+        interpolate_message "web.#{data[:object_kind]}.#{data[:object_attributes][:state]}", data[:object_attributes]
+      end
+
+      def build_branch_message(data)
+        branch = data[:ref].split('/').drop(2).join('/')
+        data[:link] = "<#{data[:repository][:homepage]}|#{data[:repository][:name]}>"
+        if data[:before] =~ /^0+$/
+          interpolate_message 'web.push.new_branch', data
+        else
+          interpolate_message 'web.push.add_to_branch', data
+        end
+      end
+
+      def build_merge_message(data)
+        url = "#{Lita.config.handlers.gitlab.url}"
+        url += if data[:project] then
+                 "#{Lita.config.handlers.gitlab.group}/#{data[:project]}/merge_requests/#{data[:object_attributes][:iid]}"
+               else
+                 "groups/#{Lita.config.handlers.gitlab.group}"
+               end
+        data[:object_attributes][:project] = data[:project]
+        data[:object_attributes][:link] = "<#{url}|#{data[:object_attributes][:title]}>"
+        interpolate_message "web.#{data[:object_kind]}.#{data[:object_attributes][:state]}", data[:object_attributes]
+      end
+
       # General methods
 
-      def build_message(key, data)
+      def interpolate_message(key, data)
         t(key) % data
       end
 

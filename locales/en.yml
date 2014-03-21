@@ -3,7 +3,7 @@ en:
     handlers:
       gitlab:
         system:
-          user_add_to_team: "%{user_name} has joined the %{project_name} project"
+          user_add_to_team: "%{user_name} has joined to the %{project_name} project"
           project_create: "%{owner_name} has created the %{name} project!"
           project_destroy: "%{owner_name} has destroyed the %{name} project!"
           user_remove_from_team: "%{user_name} has left the %{project_name} project"
@@ -15,11 +15,11 @@ en:
             reopened: "The issue '%{title}' has been reopened."
             closed: "The issue '%{title}' is now closed"
           merge_request:
-            opened: "New merge-request: %{link}"
-            reopened: "The merge-request '%{link}' has been reopened."
-            closed: "The merge-request '%{title}' is now closed."
+            opened: "New merge-request #%{iid} en %{project}: %{link}"
+            reopened: "The merge-request #%{iid} en %{project} '%{link}' has been reopened."
+            closed: "The merge-request #%{iid} en %{project} '%{title}' is now closed."
             locked: ""
-            merged: "Yay! The merge-request '%{link}' is has been merged."
+            merged: "Yay! The merge-request #%{iid} en %{project} '%{link}' is has been merged."
           push:
-            new_branch: "%{user_name} created the new branch '%{link}'"
-            add_to_branch: "%{user_name} added %{total_commits_count} commits to branch '%{link}'"
+            new_branch: "%{user_name} created the new branch '%{link}' in project %{project}"
+            add_to_branch: "%{user_name} added %{total_commits_count} commits to branch '%{link}' in project %{project}"

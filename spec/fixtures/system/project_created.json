@@ -3,7 +3,7 @@
     "event_name": "project_create",
     "name": "StoreCloud",
     "owner_email": "johnsmith@gmail.com",
-    "owner_name": "John Smit",
+    "owner_name": "John Smith",
     "path": "stormcloud",
     "path_with_namespace": "jsmith/stormcloud",
     "project_id": 74
