@@ -9,6 +9,7 @@ en:
           user_remove_from_team: "%{user_name} has left the %{project_name} project"
           user_create: "%{name} has joined the team, welcome %{name}!"
           user_destroy: "%{name} is dead for us."
+          push: "%{user_name} pushed to %{ref}"
         web:
           issue:
             opened: "New issue >> %{title}: %{description}"
@@ -23,3 +24,4 @@ en:
           push:
             new_branch: "%{user_name} created the new branch '%{link}' in project %{project}"
             add_to_branch: "%{user_name} added %{total_commits_count} commits to branch '%{link}' in project %{project}"
+          note: "New comment by %{name} on %{notable_type} no. %{noteable_id}."
