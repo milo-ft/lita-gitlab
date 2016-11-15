@@ -48,7 +48,15 @@ module Lita
       def web_message(data)
         if data.key? :object_kind
           # Merge has target branch
-          (data[:object_attributes].key? :target_branch) ? build_merge_message(data) : build_issue_message(data)
+          if data[:object_kind] =~ /merge_request/
+            build_merge_message(data)
+          elsif data[:object_kind] =~ /issue/
+            build_issue_message(data)
+          elsif data[:object_kind] =~ /note/
+            build_note_message(data)
+          else # tag_push, wiki_page, pipeline
+            Lita.logger.warn "Ignored event: #{data.inspect}"
+          end
         else
           # Push has no object kind
           build_branch_message(data)
@@ -59,6 +67,20 @@ module Lita
 
       def build_issue_message(data)
         interpolate_message "web.#{data[:object_kind]}.#{data[:object_attributes][:state]}", data[:object_attributes]
+      end
+
+      def build_note_message(data)
+        if data[:object_attributes][:noteable_type] ~= /MergeRequest/
+          interpolate_message "web.note.merge_request", data[:merge_request]
+        elsif data[:object_attributes][:noteable_type] ~= /Issue/
+          interpolate_message "web.note.issue", data[:issue]
+        elsif data[:object_attributes][:noteable_type] ~= /Snippet/
+          interpolate_message "web.note.snippet", data[:snippet]
+        elsif data[:object_attributes][:noteable_type] ~= /Commit/
+          interpolate_message "web.note.commit", data[:commit]
+        else # e.g. new type
+          Lita.logger.warn "Ignored note message: #{data.inspect}"
+        end
       end
 
       def build_branch_message(data)
