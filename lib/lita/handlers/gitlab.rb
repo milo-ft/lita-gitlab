@@ -70,13 +70,13 @@ module Lita
       end
 
       def build_note_message(data)
-        if data[:object_attributes][:noteable_type] ~= /MergeRequest/
+        if data[:object_attributes][:noteable_type] =~ /MergeRequest/
           interpolate_message "web.note.merge_request", data[:merge_request]
-        elsif data[:object_attributes][:noteable_type] ~= /Issue/
+        elsif data[:object_attributes][:noteable_type] =~ /Issue/
           interpolate_message "web.note.issue", data[:issue]
-        elsif data[:object_attributes][:noteable_type] ~= /Snippet/
+        elsif data[:object_attributes][:noteable_type] =~ /Snippet/
           interpolate_message "web.note.snippet", data[:snippet]
-        elsif data[:object_attributes][:noteable_type] ~= /Commit/
+        elsif data[:object_attributes][:noteable_type] =~ /Commit/
           interpolate_message "web.note.commit", data[:commit]
         else # e.g. new type
           Lita.logger.warn "Ignored note message: #{data.inspect}"
