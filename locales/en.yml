@@ -24,4 +24,8 @@ en:
           push:
             new_branch: "%{user_name} created the new branch '%{link}' in project %{project}"
             add_to_branch: "%{user_name} added %{total_commits_count} commits to branch '%{link}' in project %{project}"
-          note: "New comment by %{name} on %{notable_type} no. %{noteable_id}."
+          note:
+            commit: "New comment on commit %{iid}."
+            issue: "New comment on issue %{iid} '%{title}' (state: %{state})"
+            merge_request: "New comment on merge request %{id} '%{title}' (%{source_branch} → %{target_branch})."
+            snippet: "New comment on snippet %{title}."
