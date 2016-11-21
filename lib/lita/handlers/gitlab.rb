@@ -85,7 +85,7 @@ module Lita
 
       def build_branch_message(data)
         branch = data[:ref].split('/').drop(2).join('/')
-        data[:link] = "<#{data[:repository][:homepage]}|#{data[:repository][:name]}>"
+        data[:link] = "<#{data[:repository][:homepage]} | #{data[:repository][:name]}>"
         if data[:before] =~ /^0+$/
           interpolate_message 'web.push.new_branch', data
         else
@@ -94,14 +94,8 @@ module Lita
       end
 
       def build_merge_message(data)
-        url = "#{Lita.config.handlers.gitlab.url}"
-        url += if data[:project] then
-                 "#{Lita.config.handlers.gitlab.group}/#{data[:project]}/merge_requests/#{data[:object_attributes][:iid]}"
-               else
-                 "groups/#{Lita.config.handlers.gitlab.group}"
-               end
         data[:object_attributes][:project] = data[:project]
-        data[:object_attributes][:link] = "<#{url}|#{data[:object_attributes][:title]}>"
+        data[:object_attributes][:link] = "<#{data[:object_attributes][:url]} | #{data[:object_attributes][:title]}>"
         interpolate_message "web.#{data[:object_kind]}.#{data[:object_attributes][:state]}", data[:object_attributes]
       end
 

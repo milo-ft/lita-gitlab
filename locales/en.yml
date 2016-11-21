@@ -27,5 +27,5 @@ en:
           note:
             commit: "New comment on commit %{iid}."
             issue: "New comment on issue %{iid} '%{title}' (state: %{state})"
-            merge_request: "New comment on merge request %{id} '%{title}' (%{source_branch} → %{target_branch})."
+            merge_request: "New comment on merge request %{iid} '%{title}' (%{source_branch} → %{target_branch})."
             snippet: "New comment on snippet %{title}."
