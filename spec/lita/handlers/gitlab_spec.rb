@@ -89,7 +89,7 @@ describe Lita::Handlers::Gitlab, lita_handler: true do
     context 'when web project hook' do
 
       context 'when issue event' do
-        let(:issue_payload) { fixture_file('web/issue_opened') }
+        let(:issue_payload) { fixture_file('web/issue') }
         before do
           allow(params).to receive(:[]).with('payload').and_return(issue_payload)
         end
@@ -104,7 +104,7 @@ describe Lita::Handlers::Gitlab, lita_handler: true do
       end
 
       context 'when push event' do
-        let(:push_payload) { fixture_file('web/add_to_branch') }
+        let(:push_payload) { fixture_file('web/push') }
         before do
           allow(params).to receive(:[]).with('payload').and_return(push_payload)
         end
@@ -119,7 +119,7 @@ describe Lita::Handlers::Gitlab, lita_handler: true do
       end
 
       context 'when merge request event' do
-        let(:merge_request_payload) { fixture_file('web/merge_request_opened') }
+        let(:merge_request_payload) { fixture_file('web/merge_request') }
         before do
           allow(params).to receive(:[]).with('payload').and_return(merge_request_payload)
         end
