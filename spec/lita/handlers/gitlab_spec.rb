@@ -27,7 +27,7 @@ describe Lita::Handlers::Gitlab, lita_handler: true do
       project_created: 'John Smith has created the StoreCloud project!',
       project_destroyed: 'John Smith has destroyed the Underscore project!',
       issue_opened: 'New issue >> New API: create/update/delete file: Create new API for manipulations with repository',
-      add_to_branch: "John Smith added 4 commits to branch '<http://localhost/diaspora | Diaspora>' in project test_project",
+      add_to_branch: "John Smith added 4 commits to branch '<http://example.com/mike/diaspora | Diaspora>' in project test_project",
       merge_request_opened: 'New merge-request #1 en test_project: <http://example.com/diaspora/merge_requests/1 | MS-Viewport>'
     }
   }
