@@ -46,24 +46,34 @@ module Lita
       end
 
       def web_message(data)
-        if data.key? :object_kind
-          # Merge has target branch
-          (data[:object_attributes].key? :target_branch) ? build_merge_message(data) : build_issue_message(data)
-        else
-          # Push has no object kind
+        if data[:object_kind] =~ /merge_request/
+          build_merge_message(data)
+        elsif data[:object_kind] =~ /issue/
+          build_issue_message(data)
+        elsif data[:object_kind] =~ /note/
+          build_note_message(data)
+	  elsif data[:object_kind] =~ /push/
           build_branch_message(data)
+        else # tag_push, wiki_page, pipeline
+          Lita.logger.warn "Ignored event: #{data.inspect}"
         end
       rescue
-        Lita.logger.warn "Error formatting message: #{data.inspect}"
+        Lita.logger.warn "Error formatting web message: #{data.inspect}"
       end
 
       def build_issue_message(data)
         interpolate_message "web.#{data[:object_kind]}.#{data[:object_attributes][:state]}", data[:object_attributes]
       end
 
+      def build_note_message(data)
+        type = data[:object_attributes][:noteable_type].underscore
+        interpolate_message "web.note.#{type}", data[type]
+      rescue # e.g. new type
+        Lita.logger.warn "Ignored note message: #{data.inspect}"
+      end
+
       def build_branch_message(data)
-        branch = data[:ref].split('/').drop(2).join('/')
-        data[:link] = "<#{data[:repository][:homepage]}|#{data[:repository][:name]}>"
+        data[:link] = "<#{data[:repository][:homepage]} | #{data[:repository][:name]}>"
         if data[:before] =~ /^0+$/
           interpolate_message 'web.push.new_branch', data
         else
@@ -72,14 +82,8 @@ module Lita
       end
 
       def build_merge_message(data)
-        url = "#{Lita.config.handlers.gitlab.url}"
-        url += if data[:project] then
-                 "#{Lita.config.handlers.gitlab.group}/#{data[:project]}/merge_requests/#{data[:object_attributes][:iid]}"
-               else
-                 "groups/#{Lita.config.handlers.gitlab.group}"
-               end
         data[:object_attributes][:project] = data[:project]
-        data[:object_attributes][:link] = "<#{url}|#{data[:object_attributes][:title]}>"
+        data[:object_attributes][:link] = "<#{data[:object_attributes][:url]} | #{data[:object_attributes][:title]}>"
         interpolate_message "web.#{data[:object_kind]}.#{data[:object_attributes][:state]}", data[:object_attributes]
       end
 
