@@ -46,23 +46,19 @@ module Lita
       end
 
       def web_message(data)
-        if data.key? :object_kind
-          # Merge has target branch
-          if data[:object_kind] =~ /merge_request/
-            build_merge_message(data)
-          elsif data[:object_kind] =~ /issue/
-            build_issue_message(data)
-          elsif data[:object_kind] =~ /note/
-            build_note_message(data)
-          else # tag_push, wiki_page, pipeline
-            Lita.logger.warn "Ignored event: #{data.inspect}"
-          end
-        else
-          # Push has no object kind
+        if data[:object_kind] =~ /merge_request/
+          build_merge_message(data)
+        elsif data[:object_kind] =~ /issue/
+          build_issue_message(data)
+        elsif data[:object_kind] =~ /note/
+          build_note_message(data)
+	  elsif data[:object_kind] =~ /push/
           build_branch_message(data)
+        else # tag_push, wiki_page, pipeline
+          Lita.logger.warn "Ignored event: #{data.inspect}"
         end
       rescue
-        Lita.logger.warn "Error formatting message: #{data.inspect}"
+        Lita.logger.warn "Error formatting web message: #{data.inspect}"
       end
 
       def build_issue_message(data)
@@ -70,21 +66,13 @@ module Lita
       end
 
       def build_note_message(data)
-        if data[:object_attributes][:noteable_type] =~ /MergeRequest/
-          interpolate_message "web.note.merge_request", data[:merge_request]
-        elsif data[:object_attributes][:noteable_type] =~ /Issue/
-          interpolate_message "web.note.issue", data[:issue]
-        elsif data[:object_attributes][:noteable_type] =~ /Snippet/
-          interpolate_message "web.note.snippet", data[:snippet]
-        elsif data[:object_attributes][:noteable_type] =~ /Commit/
-          interpolate_message "web.note.commit", data[:commit]
-        else # e.g. new type
-          Lita.logger.warn "Ignored note message: #{data.inspect}"
-        end
+        type = data[:object_attributes][:noteable_type].underscore
+        interpolate_message "web.note.#{type}", data[type]
+      rescue # e.g. new type
+        Lita.logger.warn "Ignored note message: #{data.inspect}"
       end
 
       def build_branch_message(data)
-        branch = data[:ref].split('/').drop(2).join('/')
         data[:link] = "<#{data[:repository][:homepage]} | #{data[:repository][:name]}>"
         if data[:before] =~ /^0+$/
           interpolate_message 'web.push.new_branch', data
