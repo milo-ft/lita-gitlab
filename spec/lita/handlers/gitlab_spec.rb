@@ -28,7 +28,11 @@ describe Lita::Handlers::Gitlab, lita_handler: true do
       project_destroyed: 'John Smith has destroyed the Underscore project!',
       issue_opened: 'New issue >> New API: create/update/delete file: Create new API for manipulations with repository',
       add_to_branch: "John Smith added 4 commits to branch '<http://example.com/mike/diaspora | Diaspora>' in project test_project",
-      merge_request_opened: 'New merge-request #1 en test_project: <http://example.com/diaspora/merge_requests/1 | MS-Viewport>'
+      merge_request_opened: 'New merge-request #1 en test_project: <http://example.com/diaspora/merge_requests/1 | MS-Viewport>',
+      note_on_commit: '',
+      note_on_issue: '',
+      note_on_merge_request: '',
+      note_on_snippet: '',
     }
   }
 
@@ -128,6 +132,66 @@ describe Lita::Handlers::Gitlab, lita_handler: true do
           expect(robot).to receive(:send_message) do |target, message|
             expect(target.room).to eq('#baz')
             expect(message).to eq matchers[:merge_request_opened]
+          end
+          subject.receive(request, response)
+        end
+      end
+
+      context 'when note on commit event' do
+        let(:note_commit_payload) { fixture_file('web/note_commit') }
+        before do
+          allow(params).to receive(:[]).with('payload').and_return(note_commit_payload)
+        end
+
+        it 'notifies to the applicable rooms' do
+          expect(robot).to receive(:send_message) do |target, message|
+            expect(target.room).to eq('#baz')
+            expect(message).to eq matchers[:note_on_commit]
+          end
+          subject.receive(request, response)
+        end
+      end
+
+      context 'when note on issue event' do
+        let(:note_issue_payload) { fixture_file('web/note_issue') }
+        before do
+          allow(params).to receive(:[]).with('payload').and_return(note_issue_payload)
+        end
+
+        it 'notifies to the applicable rooms' do
+          expect(robot).to receive(:send_message) do |target, message|
+            expect(target.room).to eq('#baz')
+            expect(message).to eq matchers[:note_on_issue]
+          end
+          subject.receive(request, response)
+        end
+      end
+
+      context 'when note on merge request event' do
+        let(:note_merge_request_payload) { fixture_file('web/note_merge_request') }
+        before do
+          allow(params).to receive(:[]).with('payload').and_return(note_merge_request_payload)
+        end
+
+        it 'notifies to the applicable rooms' do
+          expect(robot).to receive(:send_message) do |target, message|
+            expect(target.room).to eq('#baz')
+            expect(message).to eq matchers[:note_on_merge_request]
+          end
+          subject.receive(request, response)
+        end
+      end
+
+      context 'when note on snippet event' do
+        let(:note_snippet_payload) { fixture_file('web/note_snippet') }
+        before do
+          allow(params).to receive(:[]).with('payload').and_return(note_snippet_payload)
+        end
+
+        it 'notifies to the applicable rooms' do
+          expect(robot).to receive(:send_message) do |target, message|
+            expect(target.room).to eq('#baz')
+            expect(message).to eq matchers[:note_on_snippet]
           end
           subject.receive(request, response)
         end
